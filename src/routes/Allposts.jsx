@@ -1,7 +1,74 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
-import Comments from './Comments';
 import '../Sidebar.css';
+
+function AllPosts() {
+  const [posts, setPosts] = useState([]);
+  
+  useEffect(() => {
+    fetch('http://localhost:3000/posts')
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        setPosts(data);
+      }).catch(err => console.error('error fetching data', err));
+  }, []);
+
+  const handleStatusChange = async (id) => {
+    try {
+        await fetch(`http://localhost:3000/posts/changeStatus/${id}`, {
+            method: 'PUT',
+        })
+        location.reload();
+    } catch (err) {
+        console.error('Fetch error: ', err);
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.sidebar}>
+        <h2 style={styles.sidebarHeading}>Manager</h2>
+        <ul style={styles.sidebarList}>
+          <li style={styles.sidebarListItem}><Link to="/" style={styles.sidebarLink} onMouseOver={(e) => e.target.style.backgroundColor = styles.sidebarLinkHover.backgroundColor} onMouseOut={(e) => e.target.style.backgroundColor = ''}>Home</Link></li>
+          <li style={styles.sidebarListItem}><Link to="/newpost" style={styles.sidebarLink} onMouseOver={(e) => e.target.style.backgroundColor = styles.sidebarLinkHover.backgroundColor} onMouseOut={(e) => e.target.style.backgroundColor = ''}>New post</Link></li>
+        </ul>
+      </div>
+
+      <div style={styles.content}>
+        <ul style={styles.posts}>
+          {posts.map((post) => (
+              <li key={post.id} style={styles.postItem}>
+                <h1 style={styles.postTitle}>{post.title}</h1>
+                <hr />
+                <p style={styles.postText}>{post.text}</p>
+                <p style={styles.postDate}>Created at: {post.addedat}</p>
+                <p style={styles.postDate}>Written by: {post.author}</p>
+                <Link to={`posts/${post.id}`} style={styles.link}>Read more</Link>
+                <button
+                    type="button"
+                    style={post.public ? styles.unpublishButton : styles.publishButton}
+                    onClick={() => handleStatusChange(post.id)}
+                    onMouseOver={(e) =>
+                        post.public
+                        ? (e.target.style.backgroundColor = styles.unpublishHover.backgroundColor)
+                        : (e.target.style.backgroundColor = styles.buttonHover.backgroundColor)
+                    }
+                    onMouseOut={(e) =>
+                        post.public
+                        ? (e.target.style.backgroundColor = styles.unpublishButton.backgroundColor)
+                        : (e.target.style.backgroundColor = styles.publishButton.backgroundColor)
+                    }
+                    >
+                    {post.public ? 'Unpublish' : 'Publish'}
+                </button>          
+              </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
 
 const styles = {
   
@@ -55,15 +122,22 @@ const styles = {
   sidebar: {
     width: '250px',
     backgroundColor: '#264653', // Dark blue
-    padding: '20px',
+    padding: '30px 20px',
     color: '#fff',
-    boxShadow: '3px 0 10px rgba(0, 0, 0, 0.2)',
+    boxShadow: '3px 0 15px rgba(0, 0, 0, 0.2)',
+    position: 'sticky',  // Make sidebar sticky
+    top: 0,              // Ensure it sticks to the top when scrolling
+    height: '100vh',      // Set height to 100vh to make it full-height
+    flexShrink: 0,
+    display: 'flex',
+    flexDirection: 'column',
   },
   sidebarHeading: {
     marginBottom: '20px',
     fontSize: '24px',
     textAlign: 'center',
     color: '#e9c46a', // Accent gold
+    letterSpacing: '1px',
   },
   sidebarList: {
     listStyleType: 'none',
@@ -73,16 +147,16 @@ const styles = {
     marginBottom: '15px',
   },
   sidebarLink: {
+    color: '#f5a462',
     textDecoration: 'none',
-    color: '#f4a261', // Soft orange
+    padding: '12px 15px',
     fontSize: '18px',
     display: 'block',
-    padding: '10px',
-    borderRadius: '5px',
-    transition: 'background-color 0.3s ease',
+    borderRadius: '8px',
+    transition: 'background-color 0.3s, transform 0.3s', // Added transform for a subtle lift effect
   },
   sidebarLinkHover: {
-    backgroundColor: '#2a9d8f', // Teal on hover
+    backgroundColor: '#2a9d8f', // A lighter blue-green for hover
   },
   content: {
     flex: 1,
@@ -140,74 +214,5 @@ const styles = {
     textDecoration: 'underline',
   },
 };
-
-function AllPosts() {
-  const [posts, setPosts] = useState([]);
-  
-  useEffect(() => {
-    fetch('http://localhost:3000/posts')
-      .then(res => res.json())
-      .then(data => {
-        console.log(data);
-        setPosts(data);
-      }).catch(err => console.error('error fetching data', err));
-  }, []);
-
-  const handleStatusChange = async (id) => {
-    try {
-        await fetch(`http://localhost:3000/posts/changeStatus/${id}`, {
-            method: 'PUT',
-        })
-        location.reload();
-    } catch (err) {
-        console.error('Fetch error: ', err);
-    }
-  };
-
-  return (
-    <div style={styles.container}>
-      <div style={styles.sidebar}>
-        <h2 style={styles.sidebarHeading}>Navigation</h2>
-        <ul style={styles.sidebarList}>
-          <li style={styles.sidebarListItem}><Link to="/" style={styles.sidebarLink} onMouseOver={(e) => e.target.style.backgroundColor = styles.sidebarLinkHover.backgroundColor} onMouseOut={(e) => e.target.style.backgroundColor = ''}>Home</Link></li>
-          <li style={styles.sidebarListItem}><Link to="/login" style={styles.sidebarLink} onMouseOver={(e) => e.target.style.backgroundColor = styles.sidebarLinkHover.backgroundColor} onMouseOut={(e) => e.target.style.backgroundColor = ''}>Login</Link></li>
-          <li style={styles.sidebarListItem}><Link to="/signup" style={styles.sidebarLink} onMouseOver={(e) => e.target.style.backgroundColor = styles.sidebarLinkHover.backgroundColor} onMouseOut={(e) => e.target.style.backgroundColor = ''}>Signup</Link></li>
-          <li style={styles.sidebarListItem}><Link to="/newpost" style={styles.sidebarLink} onMouseOver={(e) => e.target.style.backgroundColor = styles.sidebarLinkHover.backgroundColor} onMouseOut={(e) => e.target.style.backgroundColor = ''}>New post</Link></li>
-        </ul>
-      </div>
-
-      <div style={styles.content}>
-        <ul style={styles.posts}>
-          {posts.map((post) => (
-              <li key={post.id} style={styles.postItem}>
-                <h1 style={styles.postTitle}>{post.title}</h1>
-                <hr />
-                <p style={styles.postText}>{post.text}</p>
-                <p style={styles.postDate}>Created at: {post.addedat}</p>
-                <p style={styles.postDate}>Written by: {post.author}</p>
-                <button
-                    type="button"
-                    style={post.public ? styles.unpublishButton : styles.publishButton}
-                    onClick={() => handleStatusChange(post.id)}
-                    onMouseOver={(e) =>
-                        post.public
-                        ? (e.target.style.backgroundColor = styles.unpublishHover.backgroundColor)
-                        : (e.target.style.backgroundColor = styles.buttonHover.backgroundColor)
-                    }
-                    onMouseOut={(e) =>
-                        post.public
-                        ? (e.target.style.backgroundColor = styles.unpublishButton.backgroundColor)
-                        : (e.target.style.backgroundColor = styles.publishButton.backgroundColor)
-                    }
-                    >
-                    {post.public ? 'Unpublish' : 'Publish'}
-                </button>          
-              </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
 
 export default AllPosts

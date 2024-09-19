@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 
 function Newpost() {
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
     const [authorid, setAuthorid] = useState(null);
+    const navigate = useNavigate();
 
     const token = localStorage.getItem('token');
 
@@ -29,6 +31,7 @@ function Newpost() {
             if (!response.ok) {
                 throw new Error('response not ok');
             }
+            navigate('/')
         } catch (err) {
             console.error(err);
         }
@@ -39,7 +42,7 @@ function Newpost() {
             {/* Navbar Section */}
             <nav style={styles.navbar}>
                 <div style={styles.navbarContainer}>
-                    <a href="/" style={styles.logo}>Post form</a>
+                    <a style={styles.logo}>Post form</a>
                     <ul style={styles.navLinks}>
                         <li><a href="/" style={styles.navLink}>Home</a></li>
                     </ul>
@@ -140,8 +143,7 @@ const styles = {
         border: 'none',
         borderRadius: '4px',
         cursor: 'pointer',
-    },
-    
-};
+    },   
+}
 
 export default Newpost;
